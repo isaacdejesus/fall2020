@@ -1,6 +1,8 @@
 #include <iostream>
 #include <unistd.h>
+#include <fstream>
 #include <stdlib.h>
+#include <sys/wait.h>
 
 int firstOctetIp;
 int secondOctetIp;
@@ -21,7 +23,7 @@ int numberOfHosts;
 int arrayOfZeroes [] = {255, 254, 252, 248, 240, 224, 192, 128};
 void containsInfo(std::string, std::string);
 void processStrings(int &,std::string , std::string );
-void calculate( std::string, int, int);
+void calculate( std::string &, int, int);
 void calculateNetworkAddress(std::string &, int, int);
 void calculateBroadcastAddress(int &, int, int);
 void calculateMinHost(int);
@@ -33,7 +35,9 @@ int main()
 {
     std::string ip;
     std::string mask;
-    int processId;
+    pid_t processId;
+    std::ifstream readFile;
+    std::string var;
     while(std::cin>>ip)
     {
         std::cin>>mask;
@@ -41,10 +45,19 @@ int main()
         if(processId == 0)
         {
             containsInfo(ip, mask);
-            close(0);
+            _exit(0);
         }
-        else
-            std::cout<< networkAddress;
+        wait(0);
+        readFile.open("firstOctetNet.txt");
+        if(readFile.is_open())
+        {
+            while(!readFile.eof())
+            {
+                readFile>>var;
+                std::cout<<var;
+            }
+        }
+        readFile.close();
     }
 
     return 0;
@@ -53,29 +66,35 @@ int main()
 //takes ip & mask and splits string into octets
 void containsInfo(std::string IP, std::string Mask)
 {
+    std::string c_octet;
     //call processStrings to fill in values of octets
     processStrings(firstOctetIp,IP, Mask);
+    pid_t pid;
     //fork for first octet
-    if(fork() == 0)
+    for  (int i = 0; i < 3; i++)
     {
-        calculate(networkAddress, firstOctetIp, firstOctetMask); 
-        //calculateBroadcastAddress();
-        close(0);
-    }
-    if(fork() == 0)
-    {
-        calculate(networkAddress, secondOctetIp, secondOctetMask);
-        //calculateBroadcastAddress();
-    }
-    if(fork() == 0)
-    {
-        calculate(networkAddress, thirdOctetIp, thirdOctetMask);
-        //calculateBroadcastAddress();
-    }
-    if(fork() == 0)
-    {
-        calculate(networkAddress, thirdOctetIp, thirdOctetMask);
-        //calculateBroadcastAddress();
+        pid = fork();
+        if( pid == 0)
+        {
+            if(i == 0)
+            {
+            calculate(networkAddress, firstOctetIp, firstOctetMask); 
+           // std::cout<< networkAddress;
+            //calculateBroadcastAddress();
+            ////write to file
+            std::ofstream writeTo("firstOctetNet.txt");
+            if(writeTo.is_open())
+            {
+                writeTo<<networkAddress;
+                writeTo.close();
+            }
+            
+
+            _exit(0);
+            }
+        }
+        for (int i = 0; i < 3; i++)
+            wait(0);
     }
     //back to parent octet to put together the network/broadcast addresses
     //find mix/max
@@ -133,7 +152,7 @@ void processStrings(int &f, std::string a, std::string b)
     fourthOctetMask = stoi(b);
 }
 
-void calculate(std::string aString, int ip, int mask)
+void calculate(std::string &aString, int ip, int mask)
 {
     calculateNetworkAddress(aString, ip, mask);
     //calculateBroadcastAddress(ip, mask);

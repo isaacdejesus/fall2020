@@ -46,8 +46,7 @@ struct octetInfo
 };
 
 void *createParentThreads(void *structVoidPtr);
-void *performCalcs(void *anotherVoidPtr);
-void processStrings (info *);
+void processStrings (info *, int&, int&, int&, int&, int&, int&, int&, int&);
 int main()
 {
     //to be used to calculate number of zeroes on each octet of the mask
@@ -84,6 +83,7 @@ int main()
     std::cout<<readVector[4].thirdIpOctet;
     std::cout<<readVector[4].fourthIpOctet;
     */
+    
     for( int i = 0; i < size; i ++)
     {
         std::cout<<'\n';
@@ -100,12 +100,13 @@ int main()
 
 void *createParentThreads(void *structVoidPtr)
 {
+    int ip1, ip2, ip3, ip4, mask1, mask2, mask3, mask4;
     struct info *infoPtr = (struct info *)structVoidPtr;
-    processStrings(infoPtr);    //turns string into ints and saves info to struct ptr
+    processStrings(infoPtr, ip1, ip2, ip3, ip4, mask1, mask2, mask3, mask4);    //turns string into ints and saves info to struct ptr
     //now create 4 threads to perform the operations and 
-    
+    /*
     static std::vector<octetInfo> octetVector;
-    octetInfo temp1, temp2, temp3, temp4;
+    octetInfo temp;
     temp.ip = infoPtr->firstIpOctet; 
     temp.mask = infoPtr->firstMaskOctet;
     octetVector.push_back(temp);
@@ -121,21 +122,7 @@ void *createParentThreads(void *structVoidPtr)
     temp.ip = infoPtr->fourthIpOctet;
     temp.mask = infoPtr->fourthMaskOctet;
     octetVector.push_back(temp);
-    
-    pthread_t  tid[4];
-    for ( int i = 0; i < 4; i++)
-    {
-       if (pthread_create(&tid[i], NULL, performCalcs, &octetVector[i]))
-        {
-            fprintf(stderr, "error creating thread\n");
-            return NULL;
-        }
-    } 
-
-    for ( int i = 0; i < 4; i++)
-        pthread_join(tid[i], NULL);
-
-     
+    */ 
     /*
     for ( int i = 0; i < 4; i ++)
     {       
@@ -149,64 +136,70 @@ void *createParentThreads(void *structVoidPtr)
     std::cout<< infoPtr->fourthIpOctet;
     std::cout<<'\n';
     */
-    //std::cout<<infoPtr->ip<<'\n';
-    //std::cout<<infoPtr->mask<<'\n';
+    /*
+    std::cout<<ip1<<ip2<<ip3<<ip4<<'\n';
+    std::cout<<mask1<<mask2<<mask3<<mask4<<'\n';
+    */
     return NULL; 
 
 }
-void processStrings (info *ptr)
+void processStrings (info *ptr, int &firstIp, int &secondIp, int &thirdIp, int &fourthIp, int &firstMask, int &secondMask, int &thirdMask, int &fourthMask )
 {
     int loc;
     std::string temp;
-    //std::string ip = ptr->ip;
-    //std::string mask = ptr->mask;
     //first octet ip
     loc = ptr->ip.find_first_of('.');
     temp = ptr->ip.substr(0, loc);
     ptr->firstIpOctet = stoi(temp);
+    firstIp = stoi(temp);
     ptr->ip.erase(0, loc + 1);
 
     //second octet ip
     loc = ptr->ip.find_first_of('.');
     temp = ptr->ip.substr(0,loc);
     ptr->secondIpOctet = stoi(temp);
+    secondIp = stoi(temp);
     ptr->ip.erase(0, loc + 1);
 
     //third octet ip
     loc = ptr->ip.find_first_of('.');
     temp = ptr->ip.substr(0,loc);
     ptr->thirdIpOctet = stoi(temp);
+    thirdIp = stoi(temp);
     ptr->ip.erase(0, loc + 1);
 
     //fourth octet ip
     ptr->fourthIpOctet = stoi(ptr->ip);
+    fourthIp = stoi(temp);
 
     //first octet mask
     loc = ptr->mask.find_first_of(',');
     temp = ptr->mask.substr(0, loc);
     ptr->firstMaskOctet = stoi(temp);
+    firstMask = stoi(temp);
     ptr->mask.erase(0, loc + 1);
 
     //second octet mask
     loc = ptr->mask.find_first_of(',');
     temp = ptr->mask.substr(0, loc);
     ptr->secondMaskOctet = stoi(temp);
+    secondMask =stoi(temp);
     ptr->mask.erase(0, loc + 1);
     
     //third octet mask
     loc = ptr->mask.find_first_of(',');
     temp = ptr->mask.substr(0, loc);
     ptr->thirdMaskOctet = stoi(temp);
+    thirdMask = stoi(temp);
     ptr->mask.erase(0, loc + 1);
 
     //fourth octet mask
     ptr->fourthMaskOctet = stoi(ptr->mask);
-}
-void *performCalcs(void *anotherVoidPtr)
-{
- struct octectInfo *octectInfoPtr = (struct octectInfo *)anotherVoidPtr;
-    
- return NULL;
+    fourthMask = stoi(temp);
 
+    //std::cout<<firstIp<<secondIp<<thirdIp<<fourthIp<<'\n';
+    std::cout<<ptr->firstIpOctet;
+    std::cout<<ptr->secondIpOctet;
+    std::cout<<ptr->thirdIpOctet;
+    std::cout<<ptr->fourthIpOctet<<'\n';
 }
-
