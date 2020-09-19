@@ -36,18 +36,10 @@ struct info
     int totalHosts;
 };
 
-struct octetInfo
-{
-    int ip;
-    int mask;
-    int net;
-    int broadcast;
-
-};
-
 void *createParentThreads(void *structVoidPtr);
 void *performCalcs(void *anotherVoidPtr);
 void processStrings (info *);
+void processFirstOctet(info *);
 int main()
 {
     //to be used to calculate number of zeroes on each octet of the mask
@@ -87,8 +79,8 @@ int main()
     for( int i = 0; i < size; i ++)
     {
         std::cout<<'\n';
-        std::cout<<readVector[i].firstNetworkOctet;
         //std::cout<<readVector[i].firstBroadcastOctet;
+        std::cout<<readVector[i].firstNetworkOctet;
         //std::cout<<readVector[i].thirdIpOctet;
         //std::cout<<readVector[i].fourthIpOctet;
         std::cout<<'\n';
@@ -104,28 +96,10 @@ void *createParentThreads(void *structVoidPtr)
     processStrings(infoPtr);    //turns string into ints and saves info to struct ptr
     //now create 4 threads to perform the operations and 
     
-    static std::vector<octetInfo> octetVector;
-    octetInfo temp1, temp2, temp3, temp4;
-    temp.ip = infoPtr->firstIpOctet; 
-    temp.mask = infoPtr->firstMaskOctet;
-    octetVector.push_back(temp);
-
-    temp.ip = infoPtr->secondIpOctet;
-    temp.mask = infoPtr->secondMaskOctet;
-    octetVector.push_back(temp);
-
-    temp.ip = infoPtr->thirdIpOctet;
-    temp.mask = infoPtr->thirdMaskOctet;
-    octetVector.push_back(temp);
-
-    temp.ip = infoPtr->fourthIpOctet;
-    temp.mask = infoPtr->fourthMaskOctet;
-    octetVector.push_back(temp);
-    
     pthread_t  tid[4];
     for ( int i = 0; i < 4; i++)
     {
-       if (pthread_create(&tid[i], NULL, performCalcs, &octetVector[i]))
+       if (pthread_create(&tid[i], NULL, performCalcs, &structVoidPtr))
         {
             fprintf(stderr, "error creating thread\n");
             return NULL;
@@ -202,11 +176,20 @@ void processStrings (info *ptr)
     //fourth octet mask
     ptr->fourthMaskOctet = stoi(ptr->mask);
 }
+
 void *performCalcs(void *anotherVoidPtr)
 {
- struct octectInfo *octectInfoPtr = (struct octectInfo *)anotherVoidPtr;
-    
+ struct info *octectInfoPtr = (struct info *)anotherVoidPtr;
+ processFirstOctet(octectInfoPtr);   
+ std::cout<<octectInfoPtr->ip;
  return NULL;
 
 }
 
+
+void processFirstOctet(info *ptr)
+{
+   //ptr->firstNetworkOctet = ptr->firstIpOctet & ptr-> firstMaskOctet;
+   //ptr->firstBroadcastOctet = ptr-> firstNetworkOctet | !ptr->firstMaskOctet;
+   ptr->firstNetworkOctet = 9;
+}
